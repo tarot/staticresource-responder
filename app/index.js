@@ -21,6 +21,12 @@ chrome.storage.sync.get(['mapping', 'enabled'], (data) => {
   document.body.style.display = '';
 });
 
+document.querySelector('input[name="enabled"]').addEventListener('change', (event) => {
+  let submitEvent = document.createEvent('Event');
+  submitEvent.initEvent('submit', true, true);
+  document.querySelector('form').dispatchEvent(submitEvent);
+});
+
 document.querySelector('form').addEventListener('submit', (event) => {
   event.preventDefault();
   let data = {
