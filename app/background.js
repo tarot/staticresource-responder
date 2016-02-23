@@ -25,7 +25,6 @@ chrome.storage.sync.get(['mapping', 'enabled'], updateMapping);
 
 chrome.webRequest.onBeforeRequest.addListener(
   function(info) {
-    console.log(info.url);
     let staticResource = config.enabled && info.url.match(/\https:\/\/[^\/]+\.force\.com\/resource\/[^\/]+\/(.+)$/);
     let match = staticResource && config.mapping.find((e) => staticResource[1].match(e.before));
     if (!match) {
