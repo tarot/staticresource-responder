@@ -1,10 +1,11 @@
 'use strict';
 
-chrome.storage.sync.get(['mapping', 'enabled'], (data) => {
+chrome.storage.sync.get(['mapping', 'enabled', 'redirectToOrigin'], (data) => {
   if (!data.mapping) {
     data = {
       mapping: [],
-      enabled: !!data.enabled
+      enabled: !!data.enabled,
+      redirectToOrigin: 'https://localhost:8000'
     };
     chrome.storage.sync.set({mapping: data});
   }
@@ -14,10 +15,11 @@ chrome.storage.sync.get(['mapping', 'enabled'], (data) => {
   let rows = document.querySelectorAll('tbody tr');
   data.mapping.forEach((e, i) => {
     let inputs = rows[i].querySelectorAll('input');
-    inputs[0].value = e.before;
-    inputs[1].value = e.after;
+    inputs[0].value = e.before || '';
+    inputs[1].value = e.after || '';
   });
   document.querySelector('input[name="enabled"]').checked = !!data.enabled;
+  document.querySelector('input[name="redirectToOrigin"]').value = data.redirectToOrigin || '';
   document.body.style.display = '';
 });
 
@@ -30,11 +32,12 @@ document.querySelector('input[name="enabled"]').addEventListener('change', (even
 document.querySelector('form').addEventListener('submit', (event) => {
   event.preventDefault();
   let data = {
-    mapping: Array.prototype.slice.call(document.querySelectorAll('tbody tr')).map((e) => {
+    mapping: Array.from(document.querySelectorAll('tbody tr')).map((e) => {
       let inputs = e.querySelectorAll('input');
       return {before: inputs[0].value, after: inputs[1].value};
     }),
-    enabled: document.querySelector('input[name="enabled"]').checked
+    enabled: document.querySelector('input[name="enabled"]').checked,
+    redirectToOrigin: document.querySelector('input[name="redirectToOrigin"]').value
   };
   chrome.storage.sync.set(data);
 }, false);
