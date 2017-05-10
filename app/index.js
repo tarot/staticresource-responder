@@ -1,43 +1,59 @@
 'use strict';
 
-chrome.storage.sync.get(['mapping', 'enabled', 'redirectToOrigin'], (data) => {
-  if (!data.mapping) {
-    data = {
-      mapping: [],
-      enabled: !!data.enabled,
-      redirectToOrigin: 'https://localhost:8000'
-    };
-    chrome.storage.sync.set({mapping: data});
-  }
-  document.querySelector('tbody').insertAdjacentHTML('beforeend',
-    Array(11).join('<tr><td><input size="40"/></td><td><input size="40"/></td></tr>')
-  );
-  let rows = document.querySelectorAll('tbody tr');
-  data.mapping.forEach((e, i) => {
-    let inputs = rows[i].querySelectorAll('input');
-    inputs[0].value = e.before || '';
-    inputs[1].value = e.after || '';
-  });
-  document.querySelector('input[name="enabled"]').checked = !!data.enabled;
-  document.querySelector('input[name="redirectToOrigin"]').value = data.redirectToOrigin || '';
-  document.body.style.display = '';
-});
+// storage.getハンドラ。storageのデータをフォームに反映する
+function initialize(data) {
+    const mapping = Array.isArray(data.mapping) ? data.mapping : [];
 
-document.querySelector('input[name="enabled"]').addEventListener('change', (event) => {
-  let submitEvent = document.createEvent('Event');
-  submitEvent.initEvent('submit', true, true);
-  document.querySelector('form').dispatchEvent(submitEvent);
-});
+    Array.from(document.querySelectorAll('tbody tr')).forEach((tr, i) => {
+        const [before, after] = tr.querySelectorAll('input');
+        const currentMap = mapping[i] || {};
+        before.value = currentMap.before;
+        after.value = currentMap.after;
+    });
 
-document.querySelector('form').addEventListener('submit', (event) => {
-  event.preventDefault();
-  let data = {
-    mapping: Array.from(document.querySelectorAll('tbody tr')).map((e) => {
-      let inputs = e.querySelectorAll('input');
-      return {before: inputs[0].value, after: inputs[1].value};
-    }),
-    enabled: document.querySelector('input[name="enabled"]').checked,
-    redirectToOrigin: document.querySelector('input[name="redirectToOrigin"]').value
-  };
-  chrome.storage.sync.set(data);
-}, false);
+    document.querySelector('[name="enabled"]').checked = !!data.enabled;
+}
+
+// submitハンドラ。formをstorageに保存
+function handleSubmit(event) {
+    event.preventDefault();
+
+    const mapping = Array.from(document.querySelectorAll('tbody tr')).map(tr => {
+        const [before, after] = tr.querySelectorAll('input');
+        return {before: before.value, after: after.value};
+    });
+    const enabled = document.querySelector('input[name="enabled"]').checked;
+
+    chrome.storage.sync.set({mapping, enabled});
+
+    Array.from(document.querySelectorAll('.changed')).forEach(e => e.classList.remove('changed'))
+}
+
+// inputが変更されたらchangedクラスを付けてマークする。イベントデリゲートを使っている
+function markChanged(event) {
+    if (event.target.nodeName === 'INPUT') {
+        event.target.classList.add('changed');
+    }
+}
+
+// 有効チェックボックスが変更されたらすぐ保存する。チェックボックスのchangeハンドラ
+function handleEnableToggled(event) {
+    chrome.storage.sync.set({enabled: event.currentTarget.checked});
+}
+
+// background.jsから有効が切り替えられた時にチェックボックスに反映する。storageのchangeハンドラ
+function syncCheckbox(changes) {
+    const enabled = changes.enabled && changes.enabled.newValue;
+    if (enabled != null) {
+        document.querySelector('input[name="enabled"]').checked = enabled;
+    }
+}
+
+// イベントハンドラ設定
+chrome.storage.onChanged.addListener(syncCheckbox);
+document.querySelector('body').addEventListener('input', markChanged, false);
+document.querySelector('input[name="enabled"]').addEventListener('change', handleEnableToggled, false);
+document.querySelector('form').addEventListener('submit', handleSubmit, false);
+
+// storageをロード
+chrome.storage.sync.get(['mapping', 'enabled'], initialize);

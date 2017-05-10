@@ -2,25 +2,52 @@
 <html>
   <head>
     <meta charset="utf-8"/>
+    <style>
+        .changed {
+            background-color: lemonchiffon;
+        }
+    </style>
   </head>
-  <body style="display: none;">
+  <body>
     <form>
       <table>
         <thead>
           <tr>
-            <th>Before</th>
-            <th>After</th>
+            <th>Before (RegExp for Pathname + Parameters)</th>
+            <th>After (Full URL, $n for match group)</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+          <tr><td><input size="60"/></td><td><input size="60"/></td></tr>
+        </tbody>
       </table>
-      <label>
-        リダイレクト先オリジン <input name="redirectToOrigin" size="40"/>
-      </label>
       <label>
         <input type="checkbox" name="enabled"/> 有効
       </label>
       <input type="submit" value="保存"/>
+      <p>
+          Can't redirect if requests are answered from the in-memory cache.
+          Try "Hard Reload" (<code>Cmd + Shift + R</code> or open devtools and right click reload button)
+      </p>
     </form>
     <script src="../index.js"></script>
   </body>

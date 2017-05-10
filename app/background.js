@@ -1,43 +1,82 @@
 'use strict';
 
-let config = {
-  mapping: [],
-  enabled: false,
-  redirectToOrigin: 'https://localhost:8000'
-};
-let updateMapping = function(data) {
-  if (data.mapping) {
-    config.mapping = data.mapping.filter((e) => e.before && e.after).map((e) => {
-      return {before: new RegExp(e.before), after: e.after};
-    });
-  }
-  if (data.enabled != null) {
-    config.enabled = data.enabled;
-  }
-  if (data.redirectToOrigin != null) {
-    config.redirectToOrigin = data.redirectToOrigin;
-  }
+const ICONS = {
+    ENABLED: 'images/icon-128.png',
+    DISABLED: 'images/icon-gray-128.png',
 };
 
-chrome.storage.onChanged.addListener((changes) => {
-  updateMapping({
-    mapping: changes.mapping && changes.mapping.newValue,
-    enabled: changes.enabled && changes.enabled.newValue,
-    redirectToOrigin: changes.redirectToOrigin && changes.redirectToOrigin.newValue
-  });
+// グローバル変数。アプリケーションの設定
+const config = {
+    mapping: [],
+    enabled: false,
+    get icon () {
+        return this.enabled ? ICONS.ENABLED : ICONS.DISABLED;
+    }
+};
+
+// storageをグローバル変数とアイコンに反映
+function updateConfig(data) {
+    config.mapping = data.mapping
+        .filter(e => e.before && e.after)
+        .map(e => ({before: new RegExp(e.before), after: e.after}));
+    config.enabled = !!data.enabled;
+
+    updateIcon();
+}
+
+// 最初にマッチしたマッピングのリダイレクトURLを返す
+function findRedirectUrl(pathAndParams) {
+    for (let i = 0, n = config.mapping.length; i < n; ++i) {
+        let e = config.mapping[i];
+        let match = pathAndParams.match(e.before);
+        if (match) {
+            // $n の解決
+            return e.after.replace(/\$(\d{1,2})/g, (_, n) => match[parseInt(n, 10)] || '');
+        }
+    }
+}
+
+// beforeRequestハンドラ。URLのpathname + searchがマッチしたらリダイレクトする
+function route(info) {
+    if (!config.enabled) {
+        return;
+    }
+    const url = new URL(info.url);
+    const pathAntParams = `${url.pathname}${url.search}`;
+    const redirectUrl = findRedirectUrl(pathAntParams);
+    if (redirectUrl) {
+        return {redirectUrl};
+    }
+}
+
+// アイコン更新。有効の切り替えを反映する
+function updateIcon() {
+    chrome.browserAction.setIcon({path: config.icon});
+}
+
+// ブラウザアクションのアイコンクリックハンドラ。有効をトグルしてstorageに保存する
+// グローバル変数やアイコンには、storageのchangeハンドラで反映する
+function toggleEnabled() {
+    chrome.storage.sync.set({enabled: !config.enabled});
+}
+
+// イベントハンドラ設定
+chrome.browserAction.onClicked.addListener(toggleEnabled);
+
+chrome.storage.onChanged.addListener(changes => {
+    updateConfig({
+        mapping: changes.mapping ? changes.mapping.newValue : config.mapping,
+        enabled: changes.enabled ? changes.enabled.newValue : config.enabled,
+    });
 });
-chrome.storage.sync.get(['mapping', 'enabled', 'redirectToOrigin'], updateMapping);
 
 chrome.webRequest.onBeforeRequest.addListener(
-  function(info) {
-    let staticResource = config.enabled && info.url.match(/^https:\/\/[^\/]+\.force\.com\/resource\/[^\/]+\/(.+)$/);
-    let match = staticResource && config.mapping.find((e) => staticResource[1].match(e.before));
-    if (match) {
-      return {redirectUrl: `${config.redirectToOrigin}/${staticResource[1].replace(match.before, match.after)}`};
-    }
-  },
-  {
-    urls: ['https://*.force.com/resource/*']
-  },
-  ['blocking']
+    route,
+    {
+        urls: ['https://*.force.com/*', 'https://*.salesforce.com/*']
+    },
+    ['blocking']
 );
+
+// storageをロード
+chrome.storage.sync.get(['mapping', 'enabled'], updateConfig);
