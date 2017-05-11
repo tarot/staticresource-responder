@@ -1,6 +1,6 @@
 {
   "name": "staticresource-responder",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-if": "^2.0.2",
