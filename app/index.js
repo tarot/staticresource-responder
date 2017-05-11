@@ -7,8 +7,8 @@ function initialize(data) {
     Array.from(document.querySelectorAll('tbody tr')).forEach((tr, i) => {
         const [before, after] = tr.querySelectorAll('input');
         const currentMap = mapping[i] || {};
-        before.value = currentMap.before;
-        after.value = currentMap.after;
+        before.value = currentMap.before || '';
+        after.value = currentMap.after || '';
     });
 
     document.querySelector('[name="enabled"]').checked = !!data.enabled;

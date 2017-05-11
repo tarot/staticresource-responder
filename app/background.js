@@ -16,7 +16,9 @@ const config = {
 
 // storageをグローバル変数とアイコンに反映
 function updateConfig(data) {
-    config.mapping = data.mapping
+    const mapping = Array.isArray(data.mapping) ? data.mapping : [];
+
+    config.mapping = mapping
         .filter(e => e.before && e.after)
         .map(e => ({before: new RegExp(e.before), after: e.after}));
     config.enabled = !!data.enabled;
