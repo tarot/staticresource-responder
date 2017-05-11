@@ -43,9 +43,8 @@ function handleEnableToggled(event) {
 
 // background.jsから有効が切り替えられた時にチェックボックスに反映する。storageのchangeハンドラ
 function syncCheckbox(changes) {
-    const enabled = changes.enabled && changes.enabled.newValue;
-    if (enabled != null) {
-        document.querySelector('input[name="enabled"]').checked = enabled;
+    if (changes.enabled) {
+        document.querySelector('input[name="enabled"]').checked = !!changes.enabled.newValue;
     }
 }
 
