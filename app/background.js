@@ -44,8 +44,8 @@ function route(info) {
         return;
     }
     const url = new URL(info.url);
-    const pathAntParams = `${url.pathname}${url.search}`;
-    const redirectUrl = findRedirectUrl(pathAntParams);
+    const pathAndParams = `${url.pathname}${url.search}`;
+    const redirectUrl = findRedirectUrl(pathAndParams);
     if (redirectUrl) {
         return {redirectUrl};
     }
