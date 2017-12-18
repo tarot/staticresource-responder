@@ -75,7 +75,11 @@ chrome.storage.onChanged.addListener(changes => {
 chrome.webRequest.onBeforeRequest.addListener(
     route,
     {
-        urls: ['https://*.force.com/*', 'https://*.salesforce.com/*']
+        urls: [
+            'https://*.force.com/*',
+            'https://*.salesforce.com/*',
+            'https://*.lightning.com/*'
+        ]
     },
     ['blocking']
 );

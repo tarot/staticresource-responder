@@ -16,6 +16,7 @@
       "webRequestBlocking",
       "https://*.force.com/*",
       "https://*.salesforce.com/*",
+      "https://*.lightning.com/*",
       "storage"
     ],
     "background": {
